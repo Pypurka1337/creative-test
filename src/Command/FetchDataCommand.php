@@ -24,6 +24,7 @@ class FetchDataCommand extends Command
     private ClientInterface $httpClient;
     private LoggerInterface $logger;
     private string $source;
+    private int $trailers_number = 10;
     private EntityManagerInterface $doctrine;
 
     /**
@@ -83,21 +84,27 @@ class FetchDataCommand extends Command
     protected function processXml(string $data): void
     {
         $xml = (new \SimpleXMLElement($data))->children();
-//        $namespace = $xml->getNamespaces(true)['content'];
-//        dd((string) $xml->channel->item[0]->children($namespace)->encoded);
+        $namespace = $xml->getNamespaces(true)['content'];
 
         if (!property_exists($xml, 'channel')) {
             throw new RuntimeException('Could not find \'channel\' element in feed');
         }
+        $counter = 0;
         foreach ($xml->channel->item as $item) {
+            $cdataContent = (string) $item->children($namespace)->encoded;
+            preg_match('~https?://\S+(?:jpg|jpeg|png)~',$cdataContent, $imageResult);
+            
             $trailer = $this->getMovie((string) $item->title)
                 ->setTitle((string) $item->title)
                 ->setDescription((string) $item->description)
                 ->setLink((string) $item->link)
                 ->setPubDate($this->parseDate((string) $item->pubDate))
+                ->setImage($imageResult[0])
             ;
 
             $this->doctrine->persist($trailer);
+            $counter++;
+            if ($counter === $this->trailers_number) break;
         }
 
         $this->doctrine->flush();

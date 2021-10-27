@@ -1,4 +1,5 @@
-<?php declare(strict_types=1);
+<?php
+declare(strict_types=1);
 
 namespace App\Controller;
 
@@ -20,17 +21,30 @@ class HomeController
         private EntityManagerInterface $em
     ) {}
 
+    /** Вывод главной страницы
+     * 
+     * @param ServerRequestInterface $request
+     * @param ResponseInterface $response
+     * @return ResponseInterface
+     * @throws HttpBadRequestException
+     */
     public function index(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
     {
         try {
-            $data = $this->twig->render('home/index.html.twig', [
+            $data = [
                 'trailers' => $this->fetchData(),
-            ]);
+                'metadata' => [
+                    'date' => (new \DateTime())->format('j.n.o G:i'),
+                    'class' => $this::class,
+                    'method' => __METHOD__,
+                ],
+            ];
+            $template = $this->twig->render('home/index.html.twig', $data);
         } catch (\Exception $e) {
             throw new HttpBadRequestException($request, $e->getMessage(), $e);
         }
 
-        $response->getBody()->write($data);
+        $response->getBody()->write($template);
 
         return $response;
     }

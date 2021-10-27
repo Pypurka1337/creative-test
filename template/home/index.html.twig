@@ -3,14 +3,56 @@
 {% block title %}{{ trailers | length }} iTunes Movie trailers{% endblock %}
 
 {% block content %}
-    <div class="container">
-        <h1 class="mt-5 mb-4">{{ trailers | length }} iTunes Movie trailers</h1>
-        <table class="table table-bordered">
+    {% if metadata %}
+        <div class="container">
+            <h1 class="mt-5 mb-4">Metadata</h1>
+            <table class="table table-bordered">
+                {% if metadata.date %}
+                    <tr>
+                        <td>Текущая дата и время</td>
+                        <td>{{ metadata.date|date }}</td>
+                    </tr>
+                {% endif %}
+                {% if metadata.class %}
+                    <tr>
+                        <td>Класс контроллера</td>
+                        <td>{{ metadata.class }}</td>
+                    </tr>
+                {% endif %}
+                {% if metadata.class %}
+                    <tr>
+                        <td>Метод контроллера</td>
+                        <td>{{ metadata.method }}</td>
+                    </tr>
+                {% endif %}
+            </table>
+        </div>
+    {% endif %}
+    {% if trailers %}
+        <div class="container">
+            <h1 class="mt-5 mb-4">{{ trailers | length }} iTunes Movie trailers</h1>
             {% for trailer in trailers %}
-                <tr>
-                    <td>{{ trailer.title }}</td>
-                </tr>
+                <table class="table table-bordered">
+                    {% if trailer.title and trailer.link %}
+                        <tr>
+                            <td>Заголовок</td>
+                            <td><a href="{{ trailer.link }}">{{ trailer.title }}</a></td>
+                        </tr>
+                    {% endif %}
+                    {% if trailer.image %}
+                        <tr>
+                            <td>Постер</td>
+                            <td><img src="{{ trailer.image }}" alt="{{ trailer.title ?: 'alt' }}"></td>
+                        </tr>
+                    {% endif %}
+                    {% if trailer.description %}
+                        <tr>
+                            <td>Описание</td>
+                            <td>{{ trailer.description }}</td>
+                        </tr>
+                    {% endif %}
+                </table>
             {% endfor %}
-        </table>
-    </div>
+        </div>
+    {% endif %}
 {% endblock %}
